@@ -49,15 +49,14 @@ class NeuralNetwork:
        finalInputs = np.dot(self.who, hiddenOutputs) + self.outputBias
        finalOutputs = self.activationFunction(finalInputs)
 
-       deltaO = (finalOutputs - targets) * self.activationFunctionDerivative(finalInputs)
-       #deltaO = (finalOutputs - targets) * finalOutputs * (1 - finalOutputs)
-
+       outputDelta = (finalOutputs - targets) * self.activationFunctionDerivative(finalInputs)
+       hiddenDelta = np.dot(self.who.T,outputDelta) * self.activationFunctionDerivative(hiddenInputs)
+       
        self.who = self.who - self.learningRate * np.dot(deltaO, hiddenOutputs.T)
        self.outputBias = self.outputBias - self.learningRate * deltaO;
 
-       deltaH = np.dot(self.who.T,deltaO) * self.activationFunctionDerivative(hiddenInputs)
-       self.wih = self.wih - self.learningRate * np.dot(deltaH, inputs.T)
-       self.hiddenBias = self.hiddenBias - self.learningRate * deltaH
+       self.wih = self.wih - self.learningRate * np.dot(hiddenDelta, inputs.T)
+       self.hiddenBias = self.hiddenBias - self.learningRate * hiddenDelta
 
 
        pass 
@@ -67,20 +66,23 @@ class NeuralNetwork:
 pass
 
 
-n = NeuralNetwork(4,3,2,lambda x: (1/(1+np.exp(-x))) * (1-(1/(1+np.exp(-x)))),0.5)
+n = NeuralNetwork(4,3,2,lambda x: 1/(1+np.exp(-x)),lambda x: (1/(1+np.exp(-x))) * (1-(1/(1+np.exp(-x)))),0.5)
 n1 = NeuralNetwork(4,3,2,lambda x: np.tanh(x),lambda x: 1/(np.cosh(x)*np.cosh(x)),0.5)
 n2 = NeuralNetwork(4,3,2,lambda x: np.maximum(0,x),lambda x: np.heaviside(x,0),0.5)
+n3 = NeuralNetwork(4,3,2,lambda x: np.maximum(0,x*x),lambda x: np.heaviside(2*x,0),0.5)
 
 print(n.query([0.7,0.3,0.1,0.2]))
 print(n1.query([0.7,0.3,0.1,0.2]))
 print(n2.query([0.7,0.3,0.1,0.2]))
+print(n3.query([0.7,0.3,0.1,0.2]))
 
-for i in range(50):
+for i in range(10):
     n.train([0.7,0.3,0.1,0.2],[0.99,0.01])
     n1.train([0.7,0.3,0.1,0.2],[0.99,0.01])
     n2.train([0.7,0.3,0.1,0.2],[0.99,0.01])
+    n3.train([0.7,0.3,0.1,0.2],[0.99,0.01])
     pass
 print(n.query([0.7,0.3,0.1,0.2]))
 print(n1.query([0.7,0.3,0.1,0.2]))
 print(n2.query([0.7,0.3,0.1,0.2]))
-
+print(n3.query([0.7,0.3,0.1,0.2]))
